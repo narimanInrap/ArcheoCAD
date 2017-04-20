@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/plugins/archeocad" >
+        <file>icons/ArcheoIcon.png</file>
+        <file>icons/ArcheoIcon2.png</file>
+		<file>icons/help.svg</file>
+    </qresource>
+</RCC>
