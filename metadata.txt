@@ -11,7 +11,7 @@
 [general]
 name=ArcheoCAD
 qgisMinimumVersion=2.2
-description=Generates a vectorial layer of Polygons, Rectangles, Cercles and Ellipses using vertices.
+description=Generates a vectorial layer of Polygons, Rectangles, Circles and Ellipses using vertices.
 version=0.1.3
 author=Nariman Hatami - INRAP
 email=nariman.hatami@inrap.fr
