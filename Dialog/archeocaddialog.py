@@ -23,17 +23,25 @@
 #using Unicode for all strings
 from __future__ import unicode_literals
 
+#debug
+# import sys
+# sys.path.append(unicode('C:\Program Files\eclipse\plugins\org.python.pydev_3.4.1.201403181715\pysrc'))
+# from pydevd import *
+#debug
 
 import os
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+
+from PyQt5 import uic, QtWidgets
+from PyQt5.QtCore import QSettings, QTextCodec, QCoreApplication, Qt
 
 from qgis.core import *
 from qgis.gui import *
 
 from ..ui.ui_archeocad import Ui_ArcheoCAD
-from archeocadSuperDialog import ArcheoCadSuperDialog
+from .archeocadSuperDialog import ArcheoCadSuperDialog
 
 from ..toolbox.ArcheoUtilities import Utilities, ArcheoEnconding
 from ..core.ArcheoEngine import Engine
@@ -41,17 +49,17 @@ from ..toolbox.ArcheoExceptions import *
 
 
 class ArcheoCADDialog(ArcheoCadSuperDialog, Ui_ArcheoCAD):
-    def __init__(self):
-        ArcheoCadSuperDialog.__init__(self)
+    def __init__(self, parent = None):
+        super(ArcheoCadSuperDialog, self).__init__(parent)
         # Set up the user interface from Designer.
         # After setupUI you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
-        QObject.connect(self.ButtonBrowse, SIGNAL('clicked()'), self.outFile)
-        QObject.connect(self.comboPointLayer, SIGNAL('currentIndexChanged(QString)'), self.updateFieldCombos)
-        QObject.connect(self.comboPointLayer, SIGNAL('currentIndexChanged(QString)'), self.updateSortCombos)
+        self.ButtonBrowse.clicked.connect(self.outFile)        
+        self.qgsComboPointLayer.currentIndexChanged.connect(self.updateFieldCombos)      
+        self.qgsComboPointLayer.currentIndexChanged.connect(self.updateSortCombos)    
         self.populateEncodings(ArcheoEnconding.getEncodings())   
         self.populateLayerList()
             
@@ -77,26 +85,26 @@ class ArcheoCADDialog(ArcheoCadSuperDialog, Ui_ArcheoCAD):
         
         layer = self.selectedLayer()
         if layer is None:
-            msg = QtGui.QApplication.translate("Dialog", "Please specify an input layer.", None, QtGui.QApplication.UnicodeUTF8)       
-            QMessageBox.warning(self, 'ArcheoCAD', msg)
+            msg = QCoreApplication.translate("Dialog", "Please specify an input layer.")       
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', msg)
             return False
         provider = layer.dataProvider()      
         if (provider.featureCount() < 2):
-            msg = QtGui.QApplication.translate("Dialog","Polygon: Please select an input layer with at least 2 points.", None, QtGui.QApplication.UnicodeUTF8)
-            QMessageBox.warning(self, 'ArcheoCAD', msg)
+            msg = QCoreApplication.translate("Dialog","Polygon: Please select an input layer with at least 2 points.")
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', msg)
             return False
         if self.chkBoxFieldGroup.isChecked() and self.groupAttrName() == '':
-            msg = QtGui.QApplication.translate("Dialog","Please specify an input field for the gathering of the points.", None, QtGui.QApplication.UnicodeUTF8)
-            QMessageBox.warning(self, 'ArcheoCAD', msg)
+            msg = QCoreApplication.translate("Dialog","Please specify an input field for the gathering of the points.")
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', msg)
             return False
         if self.chkBoxSort.isChecked() and self.sortAttrName() == '':
-            msg = QtGui.QApplication.translate("Dialog","Please specify an input field to define the sort order for the vertices of polygons.", None, QtGui.QApplication.UnicodeUTF8)
-            QMessageBox.warning(self, 'ArcheoCAD', msg)
+            msg = QCoreApplication.translate("Dialog","Please specify an input field to define the sort order for the vertices of polygons.")
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', msg)
             return False
         extension = os.path.splitext(self.getOutputFilePath())[1][1:]
         if self.getOutputFilePath() == '' or extension != 'shp': 
-            msg = QtGui.QApplication.translate("Dialog","Please specify an output shapefile.", None, QtGui.QApplication.UnicodeUTF8)
-            QMessageBox.warning(self, 'ArcheoCAD', msg)
+            msg = QCoreApplication.translate("Dialog","Please specify an output shapefile.")
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', msg)
             return False
         return True
     
@@ -104,6 +112,7 @@ class ArcheoCADDialog(ArcheoCadSuperDialog, Ui_ArcheoCAD):
     # Copyright (C) 2010 Pavol Kapusta
     # Copyright (C) 2010, 2013 Goyo 
     def accept(self):
+        
         if not self.inputCheck():
             return        
         layer = self.selectedLayer()
@@ -118,14 +127,16 @@ class ArcheoCADDialog(ArcheoCadSuperDialog, Ui_ArcheoCAD):
             self.groupAttrName(),
             self.sortAttrName()
             )
-        try:
+        
+            
+        try:                     
             engine.createShapefile()
-        except (FileDeletionError, Exception) as e:
-            message = e.message
-            QMessageBox.warning(self, 'ArcheoCAD', message)
+        except (NoFeatureCreatedError, Exception) as e:            
+            message = '{}'.format(e)
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', message)
             logMsg = '\n'.join(engine.getLogger())
             if logMsg:
-                QMessageBox.warning(self, 'ArcheoCAD', logMsg)
+                QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', logMsg)
             return
         self.showWarning(engine) 
         self.addShapeToCanvas()        

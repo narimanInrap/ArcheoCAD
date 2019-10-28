@@ -23,7 +23,8 @@
 #using Unicode for all strings
 from __future__ import unicode_literals
 
-from PyQt4 import QtGui
+from PyQt5 import QtGui
+from PyQt5.QtCore import QCoreApplication
 
 class FileDeletionError(Exception):
     """Exception raised when a file can't be deleted."""
@@ -33,7 +34,7 @@ class FileDeletionError(Exception):
         self.message = self.__str__()
         
     def __str__(self):
-        msg = QtGui.QApplication.translate("Exceptions","Error deleting Shapefile {}.", None, QtGui.QApplication.UnicodeUTF8)
+        msg = QCoreApplication.translate("Exceptions","Error deleting Shapefile {}.")
         return msg.format(repr(self.fileName))
             
 class UnknownAttributeError(Exception):
@@ -45,7 +46,7 @@ class UnknownAttributeError(Exception):
         self.message = self.__str__()
         
     def __str__(self):
-        msg = QtGui.QApplication.translate("Exceptions", "The attribute {0} does not exist on layer {1}  or field map not associated.", None, QtGui.QApplication.UnicodeUTF8) 
+        msg = QCoreApplication.translate("Exceptions", "The attribute {0} does not exist on layer {1}  or field map not associated.") 
         return msg.format(repr(self.fieldName), repr(self.layerName))
         
 class NoFeatureCreatedError(Exception):
@@ -56,5 +57,5 @@ class NoFeatureCreatedError(Exception):
         self.message = self.__str__()
     
     def __str__(self):
-        msg = QtGui.QApplication.translate("Exceptions", "No feature was created. The shapefile was deleted {}.\n", None, QtGui.QApplication.UnicodeUTF8)
+        msg = QCoreApplication.translate("Exceptions", "No feature was created. The shapefile was deleted {}.\n")
         return msg.format(self.filename)

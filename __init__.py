@@ -7,7 +7,7 @@
                              -------------------
         begin                : 2014-04-08
         copyright            : (C) 2014 by Nariman Hatami - INRAP
-        email                : nariman.hatami@inrap.fr
+        email                : developpement-qgis@inrap.fr
  ***************************************************************************/
 
 /***************************************************************************
@@ -23,5 +23,5 @@
 
 def classFactory(iface):
     # load ArcheoCAD class from file ArcheoCAD
-    from archeocad import ArcheoCAD
+    from .archeocad import ArcheoCAD
     return ArcheoCAD(iface)

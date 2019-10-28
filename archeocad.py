@@ -7,7 +7,7 @@
                              -------------------
         begin                : 2014-04-08
         copyright            : (C) 2014 by Nariman Hatami - INRAP
-        email                : nariman.hatami@inrap.fr
+        email                : developpement-qgis@inrap.fr
  ***************************************************************************/
 
 /***************************************************************************
@@ -26,15 +26,17 @@ from __future__ import unicode_literals
 import os.path
 
 # Import the PyQt and QGIS libraries
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from qgis.core import *
+
+from PyQt5.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QAction
+
 # Initialize Qt resources from file resources.py
-import resources_rc
+from .resources import *
 
 # Import the code for the dialog
-from Dialog.archeocaddialog import ArcheoCADDialog
-from Dialog.archeoCadRectDialog import RectangleDialog
+from .Dialog.archeocaddialog import ArcheoCADDialog
+from .Dialog.archeoCadRectDialog import RectangleDialog
 
 
 

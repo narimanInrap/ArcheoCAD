@@ -20,8 +20,10 @@
  ***************************************************************************/
 """
 
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import QSettings, QTextCodec
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import QSettings, QTextCodec, QCoreApplication
+
+
 
 from qgis.core import *
 from qgis.gui import *
@@ -30,6 +32,10 @@ from os.path import splitext
 from os.path import dirname
 from os.path import basename
 
+#debug
+# import pydevd
+#debug
+
 
 # All methods of this class were adopted from 'points2one Plugin'
 # Copyright (C) 2010 Pavol Kapusta
@@ -37,14 +43,15 @@ from os.path import basename
 class Utilities(object):
   
     # Returns a list of names of all layers in QgsMapLayerRegistry
-    @staticmethod
-    def getLayerNames(geoTypes):
-        mapLayers = QgsMapLayerRegistry.instance().mapLayers()    
-        layers = []  
-        for name, layer in mapLayers.iteritems():
-            if (layer.type() == QgsMapLayer.VectorLayer) and (layer.geometryType() in geoTypes):
-                layers.append(unicode(layer.name()))
-        return layers
+#     @staticmethod
+#     def getLayerNames(geoTypes):
+#     #    pydevd.settrace()
+#         mapLayers = QgsProject.instance().mapLayers()
+#         layers = []  
+#         for name, layer in mapLayers.items():
+#             if (layer.type() == QgsMapLayer.VectorLayer) and (layer.geometryType() in geoTypes):
+#                 layers.append(unicode(layer.name()))
+#         return layers
     
     
     #Return QgsVectorLayer from a layer name ( as string )
@@ -53,8 +60,8 @@ class Utilities(object):
     def getVectorLayerByName(layerName):
 #         if layerName is None:
 #             return None
-        mapLayers = QgsMapLayerRegistry.instance().mapLayers()
-        for name, layer in mapLayers.iteritems():
+        mapLayers = QgsProject.instance().mapLayers()
+        for name, layer in mapLayers.items():
             if layer.type() == QgsMapLayer.VectorLayer and layer.name() == layerName:
                 if layer.isValid():
                     return layer
@@ -69,15 +76,8 @@ class Utilities(object):
         key = '/UI/lastShapefileDir'
         outDir = settings.value(key)
         filter = 'Shapefiles (*.shp)'
-        SaveOutPutShapeMsg = QtGui.QApplication.translate("Utility","Save output shapefile", None, QtGui.QApplication.UnicodeUTF8) 
-        outFilePath = QtGui.QFileDialog.getSaveFileName(parent, SaveOutPutShapeMsg, outDir, filter)
-        outFilePath = unicode(outFilePath)
-        if outFilePath:
-            root, ext = splitext(outFilePath)
-            if ext.upper() != '.SHP':
-                outFilePath = '%s.shp' % outFilePath
-            outDir = dirname(outFilePath)
-            settings.setValue(key, outDir)
+        SaveOutPutShapeMsg = QCoreApplication.translate("Utility","Save output shapefile")
+        outFilePath, _filter = QtWidgets.QFileDialog.getSaveFileName(parent, SaveOutPutShapeMsg, outDir, filter)
         return outFilePath
      
     # Adopted from 'fTools Plugin', Copyright (C) 2009  Carson Farmer
@@ -90,7 +90,7 @@ class Utilities(object):
         if ext == '.shp':
             layerName = root
         newLayer = QgsVectorLayer(shapeFilePath, layerName, "ogr")
-        ret = QgsMapLayerRegistry.instance().addMapLayer(newLayer)
+        ret = QgsProject.instance().addMapLayer(newLayer)
         return ret
     
     
@@ -104,9 +104,9 @@ class ArcheoEnconding(object):
   
     @staticmethod
     def getEncodings():
-        """Returns a list of available encodings static."""
+        """Returns a list of available encodings. static."""
         
-        return [unicode(QTextCodec.codecForMib(mib).name())
+        return [str(unicode(QTextCodec.codecForMib(mib).name().data(), encoding = 'utf-8'))
                  for mib in QTextCodec.availableMibs()]
     
     @staticmethod    

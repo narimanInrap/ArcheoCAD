@@ -23,16 +23,20 @@
 #using Unicode for all strings
 from __future__ import unicode_literals
 
+# #debug
+# from pydevd import *
+# #debug
+
 from itertools import groupby
 import math
 from copy import deepcopy
 
-from PyQt4.QtCore import *
-from PyQt4 import QtGui
+from PyQt5.QtCore import *
+from PyQt5 import QtGui
 from qgis.core import *
 
-from GeoEnum import GeoEnum
-from RectOrientationValue import RectOrientationValue
+from .GeoEnum import GeoEnum
+from .RectOrientationValue import RectOrientationValue
 from ..toolbox.ArcheoExceptions import *
 
 
@@ -68,15 +72,14 @@ class Engine(object):
             if not QgsVectorFileWriter.deleteShapeFile(self.fileName):
                 raise FileDeletionError(self.fileName)
         provider = self.layer.dataProvider()
-        writer = QgsVectorFileWriter(self.fileName, self.encoding,
-            provider.fields(), QGis.WKBPolygon, self.layer.crs())       
+        writer = QgsVectorFileWriter(self.fileName, self.encoding, provider.fields(), QgsWkbTypes.Polygon, self.layer.crs(), driverName = 'ESRI Shapefile')       
         for feature in self.iterateFeatures():
             writer.addFeature(feature)
             self.FeatureCounter += 1
         if self.FeatureCounter == 0:
             del writer    
             if not QgsVectorFileWriter.deleteShapeFile(self.fileName):
-                msg = QtGui.QApplication.translate("Engine","No feature was created. The {} shapefile was deleted.\n", None, QtGui.QApplication.UnicodeUTF8)
+                msg = QCoreApplication.translate("Engine","No feature was created. The {} shapefile was deleted.\n")
                 raise FileDeletionError(msg + self.fileName)
             raise NoFeatureCreatedError(self.fileName)
         del writer
@@ -113,7 +116,7 @@ class Engine(object):
                     elif GeoEnum.determineGeom(geom) in [GeoEnum.Poly, GeoEnum.Cercle, GeoEnum.Ellipse]:
                         continue
                     else:
-                        msg = QtGui.QApplication.translate("Engine","At least one group of point contains an invalid output geometry: {}", None, QtGui.QApplication.UnicodeUTF8)
+                        msg = QCoreApplication.translate("Engine","At least one group of point contains an invalid output geometry: {}")
                         raise ValueError(msg.format(geom))
                 else:
                     if GeoEnum.determineGeom(geom) == GeoEnum.Rect:
@@ -122,10 +125,10 @@ class Engine(object):
                         feature = self.CreateMethodDict[GeoEnum.determineGeom(geom)](pointList, attributes)
                      
             except ValueError as e:
-                msg = QtGui.QApplication.translate("Engine","key: {0}-value: {1}\n", None, QtGui.QApplication.UnicodeUTF8)                
-                self.logWarning(msg.format(key, e.message))
+                msg = QCoreApplication.translate("Engine","key: {0}-value: {1}\n")
+                self.logWarning(msg.format(key, e))
             except KeyError as e:
-                msg = QtGui.QApplication.translate("Engine","At least one group of point contains an invalid output geometry: {}", None, QtGui.QApplication.UnicodeUTF8)
+                msg = QCoreApplication.translate("Engine","At least one group of point contains an invalid output geometry: {}")
                 self.logWarning(msg.format(geom))           
             else:
                 yield feature
@@ -136,7 +139,7 @@ class Engine(object):
     def iterationGroups(self):
         """Iterates over the input layer grouping by attribute.    
         Returns an iterator of (key, points) pairs where key is the
-        attribute value and points is an iterator of (QgsPoint,
+        attribute value and points is an iterator of (QgsPointXY,
         attributes) pairs."""
 
         points = self.iteratePoints()
@@ -159,34 +162,34 @@ class Engine(object):
     # Copyright (C) 2010, 2013 Goyo
     def iteratePoints(self):
         """Iterates over the features of the input layer.
-        Yields pairs of (QgsPoint, attributes)."""
+        Yields pairs of (QgsPointXY, attributes)."""
               
         provider = self.layer.dataProvider()
         #create a QgsFeatureRequest with this condition : in selectedFeatureIds
-        if self.EntitiesSelected : 
-            selectedFeatureIds = self.layer.selectedFeaturesIds()          
+        if self.EntitiesSelected :
+            selectedFeatureIds = self.layer.selectedFeatureIds()         
             selectedFeatureReq = QgsFeatureRequest().setFilterFids(selectedFeatureIds) 
-            features = provider.getFeatures(selectedFeatureReq) 
+            features = provider.getFeatures(selectedFeatureReq)    
         else:            
             features = provider.getFeatures()
         feature = QgsFeature()
         while(features.nextFeature(feature)):       
             geom = feature.geometry().asPoint()
             attributes = feature.attributes()
-            yield(QgsPoint(geom.x(), geom.y()), attributes)
+            yield(QgsPointXY(geom.x(), geom.y()), attributes)
     
     # adopted from 'points2one Plugin'
     # Copyright (C) 2010 Pavol Kapusta
     # Copyright (C) 2010, 2013 Goyo    
     def createPolygon(self, pointList, attributes):
         """Returns a feature with given vertices.    
-        Vertices are given as (QgsPoint, attributeMap) pairs. The
+        Vertices are given as (QgsPointXY, attributeMap) pairs. The
         returned feature is a polygon (WKBPolygon)."""
         
         if len(pointList) < 3:
-            msg = QtGui.QApplication.translate("Engine","Can not create a polygon out of {} points.", None, QtGui.QApplication.UnicodeUTF8) 
+            msg = QCoreApplication.translate("Engine","Can not create a polygon out of {} points.")
             raise ValueError(msg.format(len(pointList)))             
-        geom = QgsGeometry.fromPolygon([pointList])               
+        geom = QgsGeometry.fromPolygonXY([pointList])               
         feature = QgsFeature()                     
         feature.setGeometry(geom)
         feature.setAttributes(attributes)
@@ -195,12 +198,12 @@ class Engine(object):
     def createCircle(self, pointList, attributes):
         
         if len(pointList) != 2 :
-            msg = QtGui.QApplication.translate("Engine","Can not create a circle out of {} point(s).", None, QtGui.QApplication.UnicodeUTF8) 
+            msg = QCoreApplication.translate("Engine","Can not create a circle out of {} point(s).")
             raise ValueError(msg.format(len(pointList)))        
         circlePoints = []        
         # Digitize the circle using its parametric equation
         angleStep = 2*math.pi/self.numCircleVertices
-        center = QgsPoint((pointList[0].x() + pointList[1].x())/2, 
+        center = QgsPointXY((pointList[0].x() + pointList[1].x())/2, 
                            (pointList[0].y() + pointList[1].y())/2)        
         distanceCal = QgsDistanceArea()
         radius = distanceCal.measureLine(center, pointList[1])        
@@ -209,9 +212,9 @@ class Engine(object):
             alpha += angleStep
             xi = radius*math.cos(alpha) + center.x()
             yi = radius*math.sin(alpha) + center.y()
-            circlePoints.append(QgsPoint(xi, yi))
+            circlePoints.append(QgsPointXY(xi, yi))
         #creating the feature                           
-        circleGeom = QgsGeometry.fromPolygon([circlePoints])
+        circleGeom = QgsGeometry.fromPolygonXY([circlePoints])
         feature = QgsFeature()
         feature.setGeometry(circleGeom)
         feature.setAttributes(attributes)
@@ -222,10 +225,10 @@ class Engine(object):
     # Copyright (c) 2012 Stuart Pernsteiner
     def createEllipse(self, pointList, attributes):
         if len(pointList) < 5 :
-            msg = QtGui.QApplication.translate("Engine","To create an Ellipse 5 points are needed.", None, QtGui.QApplication.UnicodeUTF8) 
+            msg = QCoreApplication.translate("Engine","To create an Ellipse 5 points are needed.")
             raise ValueError(msg)
         if len(pointList) > 5 : # in this case only the first 5 points are used
-            msg = QtGui.QApplication.translate("Engine","There were too many points ({}), only 5  of them were used to create the ellipse.", None, QtGui.QApplication.UnicodeUTF8) 
+            msg = QCoreApplication.translate("Engine","There were too many points ({}), only 5  of them were used to create the ellipse.") 
             self.logWarning(msg)
         # this translation is for avoiding floating point precision issues
         baryC = MathTools.barycenter(pointList)
@@ -238,7 +241,7 @@ class Engine(object):
         [a, b, c, d, e, f] = conic
         # conditions for the existence of an ellipse 
         if MathTools.bareissDeterminant([[a, b/2, d/2], [b/2, c, e/2], [d/2, e/2, f]]) == 0 or a*c - b*b/4 <= 0:
-            msg = QtGui.QApplication.translate("Engine","Could not find the ellipse passing by these five points.", None, QtGui.QApplication.UnicodeUTF8) 
+            msg = QCoreApplication.translate("Engine","Could not find the ellipse passing by these five points.") 
             raise ValueError(msg)     
         cX = (b*e - 2*c*d) / (4*a*c - b*b)
         cY = (d*b - 2*a*e) / (4*a*c - b*b)
@@ -268,9 +271,9 @@ class Engine(object):
             (xi, yi) = MathTools.rotation((xi, yi), rotAngle, center)
             # center of mass translation backwards
             (xi, yi) = (xi + baryC[0], yi + baryC[1])
-            ellipsePoints.append(QgsPoint(xi, yi))                  
+            ellipsePoints.append(QgsPointXY(xi, yi))                  
         #creating the feature
-        ellipseGeom = QgsGeometry.fromPolygon([ellipsePoints])
+        ellipseGeom = QgsGeometry.fromPolygonXY([ellipsePoints])
         feature = QgsFeature()
         feature.setGeometry(ellipseGeom)
         feature.setAttributes(attributes)
@@ -279,7 +282,7 @@ class Engine(object):
     def createRectangle(self, pointList, attributes):
         
         if len(pointList) != 2 :
-            msg =  QtGui.QApplication.translate("Engine","Exactly 2 points are needed to create a rectangle.", None, QtGui.QApplication.UnicodeUTF8)
+            msg =  QCoreApplication.translate("Engine","Exactly 2 points are needed to create a rectangle.")
             raise ValueError(msg)
         rectanglePoints = []        
         p1 = pointList[1]
@@ -295,13 +298,13 @@ class Engine(object):
         vertRad = math.radians(vertical)
         cosA = math.sin(vertRad)
         cosB = math.cos(vertRad)
-        p3 = QgsPoint((p2.x() + self.rectSideLen*cosA),
+        p3 = QgsPointXY((p2.x() + self.rectSideLen*cosA),
                       (p2.y() + self.rectSideLen*cosB))
-        p4 = QgsPoint((p1.x() + self.rectSideLen*cosA),
+        p4 = QgsPointXY((p1.x() + self.rectSideLen*cosA),
                        (p1.y() + self.rectSideLen*cosB))
         rectanglePoints.append(p3)
         rectanglePoints.append(p4)
-        rectangleGeometry = QgsGeometry.fromPolygon([rectanglePoints])
+        rectangleGeometry = QgsGeometry.fromPolygonXY([rectanglePoints])
         feature = QgsFeature()
         feature.setGeometry(rectangleGeometry)
         feature.setAttributes(attributes)
@@ -431,7 +434,7 @@ class MathTools(object):
     def solveQuadratic(a, b, c):
         
         if (b*b - 4*a*c) < 0:
-            msg = QtGui.QApplication.translate("Engine","Could not find the ellipse passing by these five points.", None, QtGui.QApplication.UnicodeUTF8) 
+            msg = QCoreApplication.translate("Engine","Could not find the ellipse passing by these five points.") 
             raise ValueError(msg)
         discRoot = math.sqrt(b*b - 4*a*c)
         x1 = (-b + discRoot) / (2*a)

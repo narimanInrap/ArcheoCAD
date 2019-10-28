@@ -24,17 +24,24 @@
 from __future__ import unicode_literals
 
 
+# #debug
+# from pydevd import *
+# #debug
 
 import os
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+# from PyQt4.QtCore import *
+# from PyQt4.QtGui import *
+
+from PyQt5 import uic
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QSettings, QTextCodec, QCoreApplication
 
 from qgis.core import *
 from qgis.gui import *
 
 from ..ui.ui_archeocad_Rect import Ui_ArcheoRect
-from archeocadSuperDialog import ArcheoCadSuperDialog
+from .archeocadSuperDialog import ArcheoCadSuperDialog
 
 from ..toolbox.ArcheoUtilities import Utilities, ArcheoEnconding
 from ..toolbox.ArcheoExceptions import *
@@ -52,9 +59,9 @@ class RectangleDialog(ArcheoCadSuperDialog, Ui_ArcheoRect):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
-        QObject.connect(self.ButtonBrowse, SIGNAL('clicked()'), self.outFile)
-        QObject.connect(self.comboPointLayer, SIGNAL('currentIndexChanged(QString)'), self.updateFieldCombos)
-        self.populateEncodings(ArcheoEnconding.getEncodings())   
+        self.ButtonBrowse.clicked.connect(self.outFile)
+        self.qgsComboPointLayer.currentIndexChanged.connect(self.updateFieldCombos)
+        self.populateEncodings(ArcheoEnconding.getEncodings())
         self.populateLayerList()      
             
     def inputCheck(self):
@@ -62,26 +69,26 @@ class RectangleDialog(ArcheoCadSuperDialog, Ui_ArcheoRect):
         
         layer = self.selectedLayer()
         if layer is None:
-            msg = QtGui.QApplication.translate("RectDialog", "Please specify an input layer.", None, QtGui.QApplication.UnicodeUTF8)
-            QMessageBox.warning(self, 'ArcheoCAD', msg)
+            msg = QCoreApplication.translate("RectDialog", "Please specify an input layer.")
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', msg)
             return False
         provider = layer.dataProvider()    
         if (provider.featureCount() < 2):
-            msg = QtGui.QApplication.translate("RectDialog","Please select an input layer with at least 2 points.", None, QtGui.QApplication.UnicodeUTF8) 
-            QMessageBox.warning(self, 'ArcheoCAD', msg)
+            msg = QCoreApplication.translate("RectDialog","Please select an input layer with at least 2 points.") 
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', msg)
             return False
         if self.chkBoxFieldGroup.isChecked() and self.groupAttrName() == '':
-            msg = QtGui.QApplication.translate("RectDialog","Please specify an input field for the gathering of the points.", None, QtGui.QApplication.UnicodeUTF8)
-            QMessageBox.warning(self, 'ArcheoCAD', msg)
+            msg = QCoreApplication.translate("RectDialog","Please specify an input field for the gathering of the points.")
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', msg)
             return False
         if self.doubleSpinBoxWidth.value() <= 0:
-            msg = QtGui.QApplication.translate("RectDialog","Please enter a strictly positive value for the rectangle's width", None, QtGui.QApplication.UnicodeUTF8)
-            QMessageBox.warning(self, 'ArcheoCAD', msg)
+            msg = QCoreApplication.translate("RectDialog","Please enter a strictly positive value for the rectangle's width")
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', msg)
             return False
         extension = os.path.splitext(self.getOutputFilePath())[1][1:]
         if self.getOutputFilePath() == '' or extension != 'shp': 
-            msg = QtGui.QApplication.translate("RectDialog","Please specify an output shapefile.", None, QtGui.QApplication.UnicodeUTF8)
-            QMessageBox.warning(self, 'ArcheoCAD', msg)
+            msg = QCoreApplication.translate("RectDialog","Please specify an output shapefile.")
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', msg)
             return False
         return True
      
@@ -108,12 +115,12 @@ class RectangleDialog(ArcheoCadSuperDialog, Ui_ArcheoRect):
             )
         try:
             engine.createShapefile()
-        except (FileDeletionError, Exception) as e:
-            message = e.message
-            QMessageBox.warning(self, 'ArcheoCAD', message)
+        except (NoFeatureCreatedError, Exception) as e:
+            message = '{}'.format(e)
+            QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', message)
             logMsg = '\n'.join(engine.getLogger())
             if logMsg:
-                QMessageBox.warning(self, 'ArcheoCAD', logMsg)
+                QtWidgets.QMessageBox.warning(self, 'ArcheoCAD', logMsg)
             return        
         self.showWarning(engine) 
         self.addShapeToCanvas()

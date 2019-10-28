@@ -68,23 +68,13 @@
    <property name="title">
     <string>Input point layer</string>
    </property>
-   <widget class="QComboBox" name="comboPointLayer">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>20</y>
-      <width>271</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QWidget" name="horizontalLayoutWidget_2">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>50</y>
+      <y>60</y>
       <width>271</width>
-      <height>21</height>
+      <height>22</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -102,8 +92,8 @@
      <rect>
       <x>20</x>
       <y>90</y>
-      <width>251</width>
-      <height>61</height>
+      <width>271</width>
+      <height>71</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -125,6 +115,16 @@
       <widget class="QComboBox" name="comboGeoChoice"/>
      </item>
     </layout>
+   </widget>
+   <widget class="QgsMapLayerComboBox" name="qgsComboPointLayer">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>30</y>
+      <width>261</width>
+      <height>21</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QGroupBox" name="gBox_multipleTr">
@@ -369,6 +369,13 @@
    </widget>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsMapLayerComboBox</class>
+   <extends>QComboBox</extends>
+   <header>qgsmaplayercombobox.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

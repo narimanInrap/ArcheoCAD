@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="fr" sourcelanguage="en">
+<TS version="2.1" language="fr" sourcelanguage="en">
 <context>
     <name>ArcheoCAD</name>
     <message>
@@ -216,7 +216,7 @@
         <location filename="core/ArcheoEngine.py" line="83"/>
         <source>No feature was created. The {} shapefile was deleted.
 </source>
-        <translation>Aucune frome n&apos;a été créée. Tentative de suppression du fichier shapefile {}.</translation>
+        <translation>Aucune forme n&apos;a été créée. Tentative de suppression du fichier shapefile {}.</translation>
     </message>
     <message>
         <location filename="core/ArcheoEngine.py" line="132"/>
@@ -276,7 +276,7 @@
         <location filename="toolbox/ArcheoExceptions.py" line="59"/>
         <source>No feature was created. The shapefile was deleted {}.
 </source>
-        <translation>Aucune frome n&apos;a été créée. Tentative de suppression du fichier shapefile {}.</translation>
+        <translation>Aucune forme n&apos;a été créée. Tentative de suppression du fichier shapefile {}.</translation>
     </message>
 </context>
 <context>

@@ -25,8 +25,10 @@ from __future__ import unicode_literals
 
 import os
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+
+from PyQt5 import QtWidgets
 
 from qgis.core import *
 from qgis.gui import *
@@ -37,16 +39,19 @@ from ..toolbox.ArcheoUtilities import Utilities, ArcheoEnconding
 from ..core.ArcheoEngine import Engine
 from ..toolbox.ArcheoExceptions import *
 
+# import pydevd;
+import sys;
+
 # superclass factorizing code for the two ArcheoCadDialog classes
-class ArcheoCadSuperDialog(QDialog):
+class ArcheoCadSuperDialog(QtWidgets.QDialog):
     def __init__(self):
-        QDialog.__init__(self)
+        QtWidgets.QDialog.__init__(self)
     
     def selectedLayer(self):
         """Returns the selected layer."""
         
-        if self.comboPointLayer.currentText():
-            return Utilities.getVectorLayerByName(self.comboPointLayer.currentText())
+        if self.qgsComboPointLayer.currentText():
+            return Utilities.getVectorLayerByName(self.qgsComboPointLayer.currentText())
 
     # adopted from 'points2one Plugin'
     # Copyright (C) 2010 Pavol Kapusta
@@ -63,10 +68,10 @@ class ArcheoCadSuperDialog(QDialog):
       
     def populateLayerList(self):
         
-        self.comboPointLayer.clear()  
-        layerList = Utilities.getLayerNames([QGis.Point])
-        self.comboPointLayer.addItems(layerList)
-        self.comboPointLayer.setCurrentIndex(0)        
+        self.qgsComboPointLayer.clear()  
+        self.qgsComboPointLayer.setCurrentIndex(-1)      
+        self.qgsComboPointLayer.setFilters(QgsMapLayerProxyModel.PointLayer)
+        self.qgsComboPointLayer.setCurrentIndex(0)        
         
     def updateFieldCombos(self):
         
@@ -124,30 +129,31 @@ class ArcheoCadSuperDialog(QDialog):
         
         logMsg = '\n'.join(engine.getLogger())
         if logMsg:
-            warningBox = QMessageBox(self)
+            warningBox = QtWidgets.QMessageBox(self)
             warningBox.setWindowTitle('ArcheOCAD')
-            message = QtGui.QApplication.translate("SDialog","Output Shapefile created.", None, QtGui.QApplication.UnicodeUTF8)
+            message = QCoreApplication.translate("SDialog","Output Shapefile created.")
             warningBox.setText(message)
-            message = QtGui.QApplication.translate("SDialog","There were some issues, maybe some features could not be created.", None, QtGui.QApplication.UnicodeUTF8)
+            message = QCoreApplication.translate("SDialog","There were some issues, maybe some features could not be created.")
             warningBox.setInformativeText(message)
             warningBox.setDetailedText(logMsg)
-            warningBox.setIcon(QMessageBox.Warning)
+            warningBox.setIcon(QtWidgets.QMessageBox.Warning)
             warningBox.exec_()        
     
     # adopted from 'points2one Plugin'
     # Copyright (C) 2010 Pavol Kapusta
     # Copyright (C) 2010, 2013 Goyo
     def addShapeToCanvas(self):
-        message = unicode(QtGui.QApplication.translate("SDialog","Created output shapefile:", None, QtGui.QApplication.UnicodeUTF8))
+        
+        message = unicode(QCoreApplication.translate("SDialog","Created output shapefile:"))
         message = '\n'.join([message, unicode(self.getOutputFilePath())])
         message = '\n'.join([message,
-            unicode(QtGui.QApplication.translate("SDialog","Would you like to add the new layer to your project?", None, QtGui.QApplication.UnicodeUTF8))])
-        addToTOC = QMessageBox.question(self, "ArcheoCAD", message,
-            QMessageBox.Yes, QMessageBox.No, QMessageBox.NoButton)
-        if addToTOC == QMessageBox.Yes:
+            unicode(QCoreApplication.translate("SDialog","Would you like to add the new layer to your project?"))])
+        addToTOC = QtWidgets.QMessageBox.question(self, "ArcheoCAD", message, QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No | QtWidgets.QMessageBox.NoButton)
+        if addToTOC == QtWidgets.QMessageBox.Yes:
             Utilities.addShapeToCanvas(unicode(self.getOutputFilePath()))
             
-    def hideDialog(self):        
+    def hideDialog(self):   
+       
         self.chkBoxFieldGroup.setCheckState(Qt.Unchecked)
         self.chkBoxSelected.setCheckState(Qt.Unchecked)
         self.outFileLine.clear()
