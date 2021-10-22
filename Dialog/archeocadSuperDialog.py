@@ -68,8 +68,7 @@ class ArcheoCadSuperDialog(QtWidgets.QDialog):
       
     def populateLayerList(self):
         
-        self.qgsComboPointLayer.clear()  
-        self.qgsComboPointLayer.setCurrentIndex(-1)      
+        #self.qgsComboPointLayer.setCurrentIndex(-1)      
         self.qgsComboPointLayer.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.qgsComboPointLayer.setCurrentIndex(0)        
         
