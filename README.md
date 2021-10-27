@@ -11,4 +11,6 @@ Circle : using 2 input points on its circumference.
 
 Ellipse : using 5 input points on its circumference.
 
+Polyline : using input points as vertices.
+
 Please consult the help file for more details.
