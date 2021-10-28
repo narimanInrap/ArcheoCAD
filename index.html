@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>L’extension ArcheoCAD &#8212; Archeocad 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="nav-item nav-item-0"><a href="#">Archeocad 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">L’extension ArcheoCAD</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="l-extension-archeocad">
+<h1>L’extension ArcheoCAD<a class="headerlink" href="#l-extension-archeocad" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="presentation">
+<span id="index-0"></span><h1>Présentation<a class="headerlink" href="#presentation" title="Permalink to this headline">¶</a></h1>
+<p>L’extension ArcheoCAD est une extension qui permet de générer, à partir d’une couche de points, des polygones de différents types : cercle, ellipse, rectangle et tout autre polygone, ainsi que des polylignes.
+Pour ce faire, la table attributaire de la couche de point en entrée, doit contenir un champ contenant le type de géométrie souhaité en sortie. Pour être traitées par l’extension, les valeurs contenues dans le champ définissant la géométrie souhaitée pour le fichier de forme en sortie doivent être les suivantes (insensible à la casse):</p>
+<ul class="simple">
+<li><p>Pour une ellipse : e, ellipse, elps, o, ovale, oval</p></li>
+<li><p>Pour un cercle : c, cercle, circle, crlc</p></li>
+<li><p>Pour un rectangle : r, rectangle, rect</p></li>
+<li><p>Pour tout autre polygone : p, polygone, polygon, pg, polyg</p></li>
+<li><p>Pour une forme polyligne : polyline, polyligne, line, ligne, l, ln, pl</p></li>
+</ul>
+<p>La prise de points sur le terrain est soumise à plusieurs conditions :</p>
+<ul class="simple">
+<li><p>pour les cercles, les deux points seront pris sur le contour et correspondent au diamètre</p></li>
+<li><p>pour les ellipses, 5 points seront pris sur le contour</p></li>
+<li><p>pour le rectangle, il faut prendre 2 points qui correspondent à la longueur de la tranchée</p></li>
+</ul>
+<p>Pour que les formes soient générées, les points topographiques doivent suivre le contour de la forme (comme si on dessinait cette forme au crayon). Si les points ne sont pas pris dans le bon ordre, il est possible d’ajouter dans la table attributaire, une colonne de tri qui indique l’ordre des nœuds des polygones en sortie.</p>
+<p>Les entités surfaciques en sortie et leurs attributs varient selon qu’on ait choisi l’option de regroupement. Il est aussi possible de regrouper les points selon un champ de tri.
+Sur les boites de dialogue on peut choisir le type pour la couche de sortie : Polygone ou Polyligne. Si le type Polyligne est choisie, toutes les formes créées, y compris les “formes fermées” seront enregistrées en polyligne.
+Si le type Polygone est choisie, et que la couche d’entrée comportent à la fois des points avec une géométrie en polyligne et des points avec une géométrie en polygones (des formes fermées), automatiquement deux couches seront générées:
+une de type polygone, et une de type polyligne dont le nom sera le nom de la première couche suivi de _Polyline.shp.</p>
+<a class="reference internal image-reference" href="_images/tableau1.png"><img alt="_images/tableau1.png" class="align-center" src="_images/tableau1.png" style="width: 650pt; height: 434pt;" /></a>
+</div>
+<div class="section" id="description-des-boites-de-dialogue">
+<span id="index-1"></span><h1>Description des boîtes de dialogue<a class="headerlink" href="#description-des-boites-de-dialogue" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="boite-de-dialogue-poly-cercle-ellipse">
+<h2>Boîte de dialogue « Poly-Cercle-Ellipse »<a class="headerlink" href="#boite-de-dialogue-poly-cercle-ellipse" title="Permalink to this headline">¶</a></h2>
+<a class="reference internal image-reference" href="_images/CercleEllipsePoly.png" id="index-2"><img alt="_images/CercleEllipsePoly.png" id="index-2" src="_images/CercleEllipsePoly.png" style="width: 40pt; height: 40pt;" /></a>
+<img alt="_images/tableau2.png" src="_images/tableau2.png" />
+<img alt="_images/PosterA3.png" src="_images/PosterA3.png" />
+</div>
+<div class="section" id="boite-de-dialogue-rectangle">
+<h2>Boîte de dialogue « Rectangle »<a class="headerlink" href="#boite-de-dialogue-rectangle" title="Permalink to this headline">¶</a></h2>
+<a class="reference internal image-reference" href="_images/Rectangle.png" id="index-3"><img alt="_images/Rectangle.png" id="index-3" src="_images/Rectangle.png" style="width: 40pt; height: 40pt;" /></a>
+<img alt="_images/tableau3.png" src="_images/tableau3.png" />
+<p id="index-4">Le code source est disponible à l’adresse suivante :</p>
+<p><a class="reference external" href="https://github.com/narimanInrap/ArcheoCAD.git">https://github.com/narimanInrap/ArcheoCAD.git</a></p>
+<hr class="docutils" />
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">L’extension ArcheoCAD</a></li>
+<li><a class="reference internal" href="#presentation">Présentation</a></li>
+<li><a class="reference internal" href="#description-des-boites-de-dialogue">Description des boîtes de dialogue</a><ul>
+<li><a class="reference internal" href="#boite-de-dialogue-poly-cercle-ellipse">Boîte de dialogue « Poly-Cercle-Ellipse »</a></li>
+<li><a class="reference internal" href="#boite-de-dialogue-rectangle">Boîte de dialogue « Rectangle »</a></li>
+</ul>
+</li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="nav-item nav-item-0"><a href="#">Archeocad 0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">L’extension ArcheoCAD</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2013, Nariman Hatami - INRAP.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.4.0.
+    </div>
+  </body>
+</html>

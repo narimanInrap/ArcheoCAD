@@ -25,11 +25,13 @@ class GeoEnum(object):
     CercleList = ['CERCLE', 'CIRCLE', 'CRCL', 'C']
     EllipseList = ['ELLIPSE', 'OVAL', 'OVALE', 'ELPS', 'E', 'O']
     RectList = ['RECT', 'RECTANGLE', 'R']
+    LineList = ['LINE', 'LIGNE', 'L', 'LN', 'POLYLINE', 'PL', 'POLYLIGNE']
     
     Poly = 1
     Cercle = 2
     Ellipse = 3
     Rect = 4
+    Line = 5
     
     @staticmethod
     def determineGeom(inGeom):
@@ -43,4 +45,6 @@ class GeoEnum(object):
             return GeoEnum.Ellipse
         if geom.upper() in GeoEnum.RectList:
             return GeoEnum.Rect
+        if geom.upper() in GeoEnum.LineList:
+            return GeoEnum.Line
         return -1

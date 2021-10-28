@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 # #debug
 # from pydevd import *
 # #debug
+import os
 
 from itertools import groupby
 import math
@@ -44,7 +45,7 @@ from ..toolbox.ArcheoExceptions import *
 class Engine(object):
     
     def __init__(self, layer, filename, encoding, geoAttr, numCircleVertices, 
-                 entitiesSelected, groupAttr = None, sortAttr = None, rectOrient = None, rectSideLen = None):
+                 entitiesSelected, QgsWkbType, groupAttr = None, sortAttr = None, rectOrient = None, rectSideLen = None):
         self.layer = layer
         self.fileName = filename
         self.encoding = encoding    
@@ -57,9 +58,13 @@ class Engine(object):
         self.rectSideLen = rectSideLen
         self.logger = []
         self.FeatureCounter = 0
+        self.polyLineFeatureCounter = 0
         self.CreateMethodDict = {GeoEnum.Cercle : self.createCircle,
                               GeoEnum.Ellipse : self.createEllipse,
-                              GeoEnum.Poly : self.createPolygon}
+                              GeoEnum.Poly : self.createPolygon,
+                              GeoEnum.Line : self.createPolyline}
+        self.QgsWkbType = QgsWkbType
+       
     
     # inspired from 'points2one Plugin'
     # Copyright (C) 2010 Pavol Kapusta
@@ -72,17 +77,36 @@ class Engine(object):
             if not QgsVectorFileWriter.deleteShapeFile(self.fileName):
                 raise FileDeletionError(self.fileName)
         provider = self.layer.dataProvider()
-        writer = QgsVectorFileWriter(self.fileName, self.encoding, provider.fields(), QgsWkbTypes.Polygon, self.layer.crs(), driverName = 'ESRI Shapefile')       
+        writer = QgsVectorFileWriter(self.fileName, self.encoding, provider.fields(), self.QgsWkbType, self.layer.crs(), driverName = 'ESRI Shapefile')
+        # we create a QgsWkbTypes.LineString just in case it is needed. If no feature layer is created it will be erased.
+        writerLineString = None
+        if self.QgsWkbType == QgsWkbTypes.Polygon and self.rectOrient is None:
+            lineFileName = os.path.splitext(self.fileName)[0] + '_PolyLine.shp'
+            check = QFile(lineFileName)
+            if check.exists():
+                if not QgsVectorFileWriter.deleteShapeFile(lineFileName):
+                    raise FileDeletionError(lineFileName)
+            writerLineString = QgsVectorFileWriter(lineFileName, self.encoding, provider.fields(), QgsWkbTypes.LineString, self.layer.crs(), driverName = 'ESRI Shapefile')
         for feature in self.iterateFeatures():
-            writer.addFeature(feature)
-            self.FeatureCounter += 1
+            if writerLineString is not None and feature.geometry().wkbType() == QgsWkbTypes.LineString: #polyline features are added to the second shapefile
+                    writerLineString.addFeature(feature)
+                    self.polyLineFeatureCounter += 1
+            else: #polygon features are added here to the first shapefile
+                writer.addFeature(feature)
+                self.FeatureCounter += 1
         if self.FeatureCounter == 0:
-            del writer    
+            del writer
             if not QgsVectorFileWriter.deleteShapeFile(self.fileName):
                 msg = QCoreApplication.translate("Engine","No feature was created. The {} shapefile was deleted.\n")
                 raise FileDeletionError(msg + self.fileName)
             raise NoFeatureCreatedError(self.fileName)
         del writer
+        if writerLineString is not None:
+            if self.polyLineFeatureCounter == 0:
+                del writerLineString
+                if not QgsVectorFileWriter.deleteShapeFile(self.lineFileName):
+                    raise FileDeletionError(msg + self.lineFileName)
+            del writerLineString
     
     # inspired from 'points2one Plugin'
     # Copyright (C) 2010 Pavol Kapusta
@@ -91,7 +115,7 @@ class Engine(object):
         """Iterates over features with vertices in the input layer.
         For each consecutive group of points with the same value for the
         given attribute, yields a "WKBPolygon" (Circle, Ellipse, Rectangle 
-        or general Polygon) using those points."""
+        or general Polygon), or a "WKBLineString" using those points."""
         
         for key, pts in self.iterationGroups():            
             try:               
@@ -104,7 +128,7 @@ class Engine(object):
                 points = [p for p in pts]                
                 attributes = points[0][1]
                 geom = str(attributes[geomAttrIdx]).upper()
-                if self.sortAttr and GeoEnum.determineGeom(geom) == GeoEnum.Poly:
+                if self.sortAttr and (GeoEnum.determineGeom(geom) == GeoEnum.Poly or GeoEnum.determineGeom(geom) == GeoEnum.Line):
                     sortAttrIdx = provider.fieldNameIndex(self.sortAttr)
                     if sortAttrIdx < 0:
                         raise UnknownAttributeError(self.layer.name, self.sortAttr)
@@ -113,7 +137,7 @@ class Engine(object):
                 if self.rectOrient is not None: # we are in the Rectangle Dialog case
                     if GeoEnum.determineGeom(geom) == GeoEnum.Rect:
                         feature = self.createRectangle(pointList, attributes)                        
-                    elif GeoEnum.determineGeom(geom) in [GeoEnum.Poly, GeoEnum.Cercle, GeoEnum.Ellipse]:
+                    elif GeoEnum.determineGeom(geom) in [GeoEnum.Poly, GeoEnum.Cercle, GeoEnum.Ellipse, GeoEnum.Line]:
                         continue
                     else:
                         msg = QCoreApplication.translate("Engine","At least one group of point contains an invalid output geometry: {}")
@@ -190,6 +214,20 @@ class Engine(object):
             msg = QCoreApplication.translate("Engine","Can not create a polygon out of {} points.")
             raise ValueError(msg.format(len(pointList)))             
         geom = QgsGeometry.fromPolygonXY([pointList])               
+        feature = QgsFeature()                     
+        feature.setGeometry(geom)
+        feature.setAttributes(attributes)
+        return feature
+    
+    def createPolyline(self, pointList, attributes):
+        """Returns a feature with given vertices.    
+        Vertices are given as (QgsPointXY, attributeMap) pairs. The
+        returned feature is a polyLine (WKBLineString)."""
+        
+        if len(pointList) < 2:
+            msg = QCoreApplication.translate("Engine","Can not create a polyline out of {} points.")
+            raise ValueError(msg.format(len(pointList)))             
+        geom = QgsGeometry.fromPolylineXY(pointList)                      
         feature = QgsFeature()                     
         feature.setGeometry(geom)
         feature.setAttributes(attributes)
