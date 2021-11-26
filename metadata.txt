@@ -13,7 +13,7 @@
 name=ArcheoCAD
 qgisMinimumVersion=3.4
 description=Generates a vectorial layer of Polygons, Rectangles, Circles and Ellipses using vertices.
-version=3.1.1
+version=3.2.2
 author=Nariman Hatami - INRAP
 email=developpement-qgis@inrap.fr
 about=This plugin is developed on the demand of INRAP archaelogists and topographers and it is in particular adapted for archaeological field survey.
@@ -27,7 +27,7 @@ about=This plugin is developed on the demand of INRAP archaelogists and topograp
 # changelog=
 
 # tags are comma separated with spaces allowed
-tags=polygon, circle, ellipse, rectangle, archaeology, topography, vector
+tags=polygon, circle, ellipse, rectangle, archaeology, topography, vector, polyline
 
 homepage=https://github.com/narimanInrap/ArcheoCAD/blob/master/README.md
 tracker=https://github.com/narimanInrap/ArcheoCAD/issues
